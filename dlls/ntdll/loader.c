@@ -1926,6 +1926,7 @@ done:
 
 /***********************************************************************
  *           load_builtin_dll
+ *       Loading builtin dll is exactly loading share object for bultin dll or loading according IMAGE_NT_HEADERS stored before
  */
 static NTSTATUS load_builtin_dll( LPCWSTR load_path, LPCWSTR path, HANDLE file,
                                   DWORD flags, WINE_MODREF** pwm )
@@ -1957,7 +1958,7 @@ static NTSTATUS load_builtin_dll( LPCWSTR load_path, LPCWSTR path, HANDLE file,
         ANSI_STRING unix_name;
 
         TRACE("Trying built-in %s\n", debugstr_w(path));
-
+        
         if (!RtlDosPathNameToNtPathName_U( path, &nt_name, NULL, NULL ))
             return STATUS_DLL_NOT_FOUND;
 

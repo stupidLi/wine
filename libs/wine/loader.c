@@ -207,7 +207,9 @@ static inline int file_exists( const char *name )
     }
     return ret;
 }
-
+/*
+ * copy str to buff-len
+ */
 static inline char *prepend( char *buffer, const char *str, size_t len )
 {
     return memcpy( buffer - len, str, len );
@@ -254,7 +256,10 @@ static char *first_dll_path( const char *name, int win16, struct dll_path_contex
     char *p;
     int namelen = strlen( name );
     const char *ext = win16 ? "16" : ".so";
-
+    /*
+     * construct a context ,a buffer for dll path
+     * 
+     */
     context->buffer = malloc( dll_path_maxlen + 2 * namelen + strlen(ext) + 3 );
     context->index = build_dir ? 0 : 2;  /* if no build dir skip all the build dir magic cases */
     context->name = context->buffer + dll_path_maxlen + namelen + 1;
@@ -954,9 +959,10 @@ void wine_init( int argc, char *argv[], char *error, int error_size )
     __wine_main_argv = argv;
     __wine_main_environ = __wine_get_main_environment();
     mmap_init();
-
+    //load appropriate share object for ntdll.dll
     for (path = first_dll_path( "ntdll.dll", 0, &context ); path; path = next_dll_path( &context ))
     {
+        //find dll dlopen share object and load it
         if ((ntdll = wine_dlopen( path, RTLD_NOW, error, error_size )))
         {
             /* if we didn't use the default dll dir, remove it from the search path */
@@ -967,6 +973,7 @@ void wine_init( int argc, char *argv[], char *error, int error_size )
     free_dll_path( &context );
 
     if (!ntdll) return;
+    //get address of __wine_process_init from ntdll.dll's shareobject,ande jump to it
     if (!(init_func = wine_dlsym( ntdll, "__wine_process_init", error, error_size ))) return;
 #ifdef __APPLE__
     apple_main_thread( init_func );
